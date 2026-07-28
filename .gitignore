@@ -1,0 +1,10 @@
+# Brainstorming artifacts
+.superpowers/
+
+# Binary
+*.exe
+
+# Secrets
+cert.pem
+key.pem
+config.json

